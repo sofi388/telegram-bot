@@ -1,5 +1,6 @@
 package demo.servicebot.bot;
 
+import demo.servicebot.database.MySQLConnect;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -20,26 +21,20 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        //мы проверяем, что сообщение реально существует, потому извлекаем само сообщение (message) и айдишник чата (chatId), в котором идет переписка.
 
         if(update.hasMessage() && update.getMessage().hasText()) {
             String message = update.getMessage().getText().trim();
-            String messageBack = "";
+            String messageBack;
             String chatId = update.getMessage().getChatId().toString();
 
+            MySQLConnect mysql = new MySQLConnect();
 
-            // Default - change later
-            if (message.equals("Romantic")){
-                messageBack = "500 Days of Summer";
+            //Check for existing genres
+            //todo: add more genres and proper checking
+           if (message.equals("Comedy") || message.equals("Musical")  ){
+               messageBack = mysql.runSQL(message);
             }
-            else if (message.equals("Comedy")){
-                messageBack = "Mask";
-            }
-            else if (message.equals("Fantasy")){
-                messageBack = "Back in the Future";
-            }
-            else messageBack = "Didn't get the genre:(";
-
+            else messageBack = "No films";
 
             SendMessage sm = new SendMessage();
             sm.setChatId(chatId);
@@ -48,7 +43,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             try {
                 execute(sm);
             } catch (TelegramApiException e) {
-                //todo add logging to the project.
+                //todo: add logging
                 e.printStackTrace();
             }
         }
